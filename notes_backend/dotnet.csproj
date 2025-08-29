@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="NSwag.AspNetCore" Version="14.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.14" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.0" />
   </ItemGroup>
 
 </Project>
