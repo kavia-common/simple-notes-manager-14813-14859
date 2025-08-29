@@ -1,0 +1,4 @@
+{
+    "command": "dotnet test",
+    "working_directory": "/home/kavia/workspace/code-generation/simple-notes-manager-14813-14859/notes_backend"
+}
