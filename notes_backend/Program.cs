@@ -1,4 +1,6 @@
 using System.Text;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 using NotesBackend.DTOs;
 using NotesBackend.Models;
 using NotesBackend.Repositories;
@@ -34,7 +36,8 @@ builder.Services.AddSingleton<INoteRepository, InMemoryNoteRepository>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 
-// JWT Authentication configuration (from env vars or appsettings)
+/* JWT Authentication configuration (from env vars or appsettings)
+   Configure TokenValidationParameters directly using configuration to avoid creating an extra ServiceProvider inside Program.cs. */
 var jwtIssuer = Environment.GetEnvironmentVariable(JwtTokenService.EnvJwtIssuer) ?? builder.Configuration["Jwt:Issuer"] ?? "notes-backend";
 var jwtAudience = Environment.GetEnvironmentVariable(JwtTokenService.EnvJwtAudience) ?? builder.Configuration["Jwt:Audience"] ?? "notes-clients";
 var jwtSecret = Environment.GetEnvironmentVariable(JwtTokenService.EnvJwtSecret) ?? builder.Configuration["Jwt:Secret"] ?? "CHANGE_ME_DEV_SECRET_32CHARS_MINIMUM";
@@ -43,17 +46,22 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = "Bearer";
     options.DefaultChallengeScheme = "Bearer";
-}).AddJwtBearer(options =>
+})
+.AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false; // enable HTTPS in production
     options.SaveToken = true;
-    // Resolve at runtime to avoid static dependency in Program.cs
-    using var scope = builder.Services.BuildServiceProvider().CreateScope();
-    var tokenSvc = scope.ServiceProvider.GetRequiredService<ITokenService>() as JwtTokenService;
-    if (tokenSvc != null)
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.TokenValidationParameters = tokenSvc.BuildValidationParameters();
-    }
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromSeconds(30)
+    };
 });
 
 builder.Services.AddAuthorization();
