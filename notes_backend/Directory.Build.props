@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- Prevent interactive restore/build in CI -->
+    <RestoreLockedMode>false</RestoreLockedMode>
+    <RestoreInteractive>false</RestoreInteractive>
+  </PropertyGroup>
+</Project>
